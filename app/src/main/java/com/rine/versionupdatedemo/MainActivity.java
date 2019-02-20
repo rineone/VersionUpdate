@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
                 UpdateApp.from(mContext,R.layout.view_alertdialog5)
                 .setApkInfo("taoerxue","taoerxueV2.3.7.1801112","淘儿学",getPackageName())
                 .setApkUrl("https://image.taoerxue.com/taoerxueV2.3.7.1801112.apk")
-                .setIcLauncher(R.mipmap.ic_launcher1)
+                .setIcLauncher(R.mipmap.ic_launcher2)
                         .setLinMainId(R.id.lLayout_bg)
                         .setTvTitleId(R.id.txt_title)
                         .setTvCancleId(R.id.btn_neg)
