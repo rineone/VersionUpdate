@@ -12,7 +12,6 @@
         android:allowBackup="true"
         android:label="@string/app_name"
         android:supportsRtl="true">
-        <service android:name="com.rine.versionupdate.Service.UpdataAppService" />
 
         <!--app安装配置（兼容24以上的版本）-->
         <provider
@@ -25,5 +24,8 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+        <!--服务注册-->
+        <service android:name="com.rine.versionupdate.Service.UpdataAppService" />
     </application>
 </manifest>
