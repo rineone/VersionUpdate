@@ -133,7 +133,7 @@ public class OkHttpDown {
                    total = response.body().contentLength();
                }
                /**阀门，控制流**/
-               int faLong = 1024*100;
+               int faLong = 1024*9000;
                byte[] bytes = new byte[faLong];
                int len = 0;
 
