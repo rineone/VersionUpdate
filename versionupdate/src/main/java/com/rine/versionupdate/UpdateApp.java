@@ -12,7 +12,7 @@ import com.rine.versionupdate.Contract.UpdateAppPresenter;
 import com.rine.versionupdate.Linstener.UpdateAppDownListener;
 import com.rine.versionupdate.Linstener.UpdateAppListener;
 import com.rine.versionupdate.widget.AlertDialogUpdate;
-
+import com.rine.versionupdate.R;
 
 /**
  * App更新

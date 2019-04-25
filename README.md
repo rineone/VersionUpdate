@@ -7,6 +7,7 @@
 * 这是一个APP更新插件，其中包含自定义Layout更新页面和默认更新页面
 ## 消息介绍
 1.默认更新
+```java
  UpdateApp.from(mContext)
                         .setApkInfo("app","appV1.1.1.1801112","app名",getPackageName())
                         .setApkUrl(apkPath)
@@ -16,11 +17,12 @@
                         .setFailToast("下载失败！")
                         .setSuccessToast("下载成功！")
                         .show();
-
+```
 
 
 
  2.自定义更新及其扩展监听
+ ```java
   UpdateApp.from(mContext,R.layout.view_alertdialog5)
                  .setApkInfo("app","appV1.1.1.1801112","app名",getPackageName())
                  .setApkUrl("https://image.taoerxue.com/taoerxueV2.3.7.1801112.apk")
@@ -92,3 +94,4 @@
                      }
                  })
                  .show();
+  ```
