@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import com.rine.versionupdate.Entity.DownloadBean;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 public class FilesUtils {
@@ -104,5 +105,34 @@ public class FilesUtils {
         File newFile = new File(newPath);
         //执行重命名
         oleFile.renameTo(newFile);
+    }
+
+    /**
+     * 获取指定文件的大小
+     *
+     * @return
+     * @throws Exception
+     */
+    public static long getFileSize(File file) {
+
+        long size = 0;
+        if (file.exists()) {
+            FileInputStream fis = null;
+            try {
+                fis = new FileInputStream(file);//使用FileInputStream读入file的数据流
+                size = fis.available();//文件的大小
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        } else {
+        }
+        return size;
     }
 }

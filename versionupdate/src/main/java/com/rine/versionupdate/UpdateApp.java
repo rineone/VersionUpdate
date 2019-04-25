@@ -12,7 +12,7 @@ import com.rine.versionupdate.Contract.UpdateAppPresenter;
 import com.rine.versionupdate.Linstener.UpdateAppDownListener;
 import com.rine.versionupdate.Linstener.UpdateAppListener;
 import com.rine.versionupdate.widget.AlertDialogUpdate;
-import com.rine.versionupdate.R;
+
 
 /**
  * App更新
@@ -21,6 +21,8 @@ import com.rine.versionupdate.R;
 public class UpdateApp implements UpdateAppContract.View {
 
     private Context mContext; /**外部导入布局**/
+    /**是否自定义界面**/
+    private boolean isCusLayout = false;
     private int mLayout;
     private int mStyle;
     /**Apk链接**/
@@ -51,24 +53,28 @@ public class UpdateApp implements UpdateAppContract.View {
     private String mApkNameVersion = "apkV";
     /**APK名标题（用于nofit），默认为apk**/
     private String mApkNameTitle = "标题";
+    /**成功toast**/
+    private String mToastSuccess;
+    /**失败toast**/
+    private String mToastFails;
     /**标题**/
     private String mTitle;
     /**内容**/
     private String mMsg;
     /**确认按钮名**/
-    private String mConfirm;
+    private String mConfirm="确认";
     /**取消按钮名**/
-    private String mCancel;
+    private String mCancel="取消";
     /**内容是否居中**/
-    private boolean isCenter;
+    private boolean isCenter = true;
     /**点击确认是否关闭dialog**/
     private boolean dialogConfirmDiss;
     /**按返回键Dialog是否退出，false不能退出**/
     private boolean dialogCancelable;
     /**是否显示在通知栏上**/
-    private boolean mIsShowNofit;
+    private boolean mIsShowNofit = true;
     /**是否显示在弹窗上**/
-    private boolean mIsShowPb;
+    private boolean mIsShowPb = false;
     /**确认按钮是否显示**/
     private boolean mIsTvConfirmVisible = true;
     /**取消按钮是否显示**/
@@ -110,6 +116,11 @@ public class UpdateApp implements UpdateAppContract.View {
         return this;
     }
 
+    public UpdateApp setIsCusLayout(boolean isCusLayout){
+        this.isCusLayout = isCusLayout;
+        return this;
+    }
+
     public UpdateApp setStyle(int mStyle){
         this.mStyle = mStyle;
         return this;
@@ -117,6 +128,16 @@ public class UpdateApp implements UpdateAppContract.View {
 
     public UpdateApp setIcLauncher(int mIcLauncher){
         this.mIcLauncher = mIcLauncher;
+        return this;
+    }
+
+    public UpdateApp setSuccessToast(String mToastSuccess){
+        this.mToastSuccess = mToastSuccess;
+        return this;
+    }
+
+    public UpdateApp setFailToast(String mToastFails){
+        this.mToastFails = mToastFails;
         return this;
     }
 
@@ -273,14 +294,21 @@ public class UpdateApp implements UpdateAppContract.View {
         mPresenter.clear(mContext);
     }
 
-
-
-
     public void show(){
         mPresenter = new UpdateAppPresenter(this);
-        final AlertDialogUpdate alertDialogUpdate = new AlertDialogUpdate(mContext,mLayout,mPresenter);
+
+        if (!isCusLayout){
+            mLayout = R.layout.dialog_confirm;
+            mLinMainId = R.id.lin_main_bg;
+            mStyle = R.style.DialogActivityTheme;
+            mTvTitleId = 0;
+            mTvCancleId = R.id.dialog_confirm_cancle;
+            mTvCloseId = 0;
+            mTvConfirmId = R.id.dialog_confirm_sure;
+            mTvMsgId = R.id.dialog_confirm_title;
+        }
+        final AlertDialogUpdate alertDialogUpdate  = new AlertDialogUpdate(mContext,mLayout,mPresenter);
         alertDialogUpdate.setLinMainId(mLinMainId);
-        alertDialogUpdate.setStyle(mStyle);
         alertDialogUpdate.setTvTitleId(mTvTitleId);
         alertDialogUpdate.setTvCancelId(mTvCancleId);
         alertDialogUpdate.setTvCloseId(mTvCloseId);
@@ -305,7 +333,7 @@ public class UpdateApp implements UpdateAppContract.View {
             @Override
             public void onClick(View v) {
                 mPresenter.startDown(mContext,mIsShowNofit,mIsShowPb
-                        ,alertDialogUpdate,mApkUrl,mIcLauncher,mApkNameVersion,mApkNameTitle,mApkPackageName);
+                        ,alertDialogUpdate,mApkUrl,mIcLauncher,mApkNameVersion,mApkNameTitle,mApkPackageName,mToastFails,mToastSuccess);
                 if (updateAppListener!=null) {
                     updateAppListener.updateAppConfirm(alertDialogUpdate.getTvConfirm(),alertDialogUpdate.getTvCancel(),alertDialogUpdate.getTvClose(),alertDialogUpdate.getTvMsg());
                 }

@@ -54,7 +54,7 @@ public class OkHttpDown {
      * @return
      */
     public boolean downApp(final Context context, final String url, final String mApkNameVersion, final long totalLen,final long cusDownLen) {
-        DownloadBean downloadBean = new DownloadBean(0,totalLen);
+        final DownloadBean downloadBean = new DownloadBean(0,totalLen);
         try {
             String RANGE = "";
             final File file = new File(FilesUtils.getInstance().getAppCacheDir(context), FilesUtils.getInstance().apkFile(mApkNameVersion));
@@ -64,9 +64,7 @@ public class OkHttpDown {
                 file.getParentFile().mkdir();
             }else{
                 if (totalLen == 0){
-                    deleteFile(file,1,"");
-                    file.createNewFile();
-                    RANGE ="";
+                   //不处理
                 }else{
                     long fileLen = file.length();
                     if (fileLen!=cusDownLen){
@@ -99,6 +97,7 @@ public class OkHttpDown {
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
                     if (response.body() == null) {
+                        netErrorSend2( downloadBean.getBytesReaded(),totalLen);
                         return;
                     }
                     writeFile(context,file,response,mApkNameVersion,totalRead,totalLen);
@@ -107,7 +106,6 @@ public class OkHttpDown {
             return true;
         }catch (Exception e){
             netErrorSend2( downloadBean.getBytesReaded(),totalLen);
-            setCallbackFail(e.toString());
             return false;
         }
     }
@@ -128,8 +126,6 @@ public class OkHttpDown {
                if (totalRead!=0){
                    sleep(1000);
                }
-
-               fos = new FileOutputStream(file,true);
                //如果是再次连接的，总长度为第一次获取的值
                if (totalLen!=0){
                    total = totalLen;
@@ -140,28 +136,43 @@ public class OkHttpDown {
                int faLong = 1024*100;
                byte[] bytes = new byte[faLong];
                int len = 0;
-               while ((len = is.read(bytes)) != -1) {
-                   if (isBreakDown){
-                       break;
+
+               //一开始检测其网上的文件大小和本地的文件大小是否一样，如果一样则直接成功，如果不一样则删除
+               double fileLens = (double)FilesUtils.getFileSize(file);
+               if (totalRead == 0 && fileLens == total){
+                   progress = 100;
+                   RxBus.getDefault().send(new DownloadBean((int)total, (int)total, (int)progress,true));
+               }else{
+                   if (totalRead == 0){
+                       deleteFile(file,1,"");
+                       file.createNewFile();
                    }
-                   fos.write(bytes, 0, len);
-                   totalRead = totalRead + len;
-                   sleep(10);
-                   double min = totalRead/1024/1024 ;
-                   double max =  total/1024/1024 ;
-                   progress = (min / max) * 100 ;
-                   RxBus.getDefault().send(new DownloadBean((int)total, (int)totalRead,(int)progress,true));
+                   fos = new FileOutputStream(file,true);
+                   while ((len = is.read(bytes)) != -1) {
+                       if (isBreakDown){
+                           break;
+                       }
+                       fos.write(bytes, 0, len);
+                       totalRead = totalRead + len;
+                       sleep(10);
+                       double min = totalRead/1024/1024 ;
+                       double max =  total/1024/1024 ;
+                       progress = (min / max) * 100 ;
+                       RxBus.getDefault().send(new DownloadBean((int)total, (int)totalRead,(int)progress,true));
+                   }
                }
-               is.close();
-               fos.flush();
-               fos.close();
-           } catch (FileNotFoundException e) {
+
+
+               if (is != null) {
+                   is.close();
+               }
+               if (fos!=null){
+                   fos.flush();
+                   fos.close();
+               }
+           } catch (Exception e) {
                e.printStackTrace();
-           } catch (IOException e) {
-               e.printStackTrace();
-           }   catch (InterruptedException e) {
-               e.printStackTrace();
-           } finally {
+           }  finally {
                try {
                    if (is != null) {
                        is.close();

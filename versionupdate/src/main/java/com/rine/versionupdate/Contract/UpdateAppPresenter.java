@@ -11,15 +11,18 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.content.FileProvider;
+import android.widget.Toast;
 
 import com.rine.versionupdate.R;
 import com.rine.versionupdate.Service.UpdataAppService;
 import com.rine.versionupdate.utils.FilesUtils;
 import com.rine.versionupdate.utils.LogUtils;
+import com.rine.versionupdate.utils.StringUtil;
 import com.rine.versionupdate.widget.AlertDialogUpdate;
 
 import java.io.File;
 
+import static android.os.Process.getUidForName;
 import static android.os.Process.killProcess;
 
 /**
@@ -40,11 +43,12 @@ public class UpdateAppPresenter  implements UpdateAppContract.Presenter {
     @Override
     public void startDown(final Context context, final boolean isShowNofit, final boolean isShowPb
             , final AlertDialogUpdate alertDialogUpdate, final String url
-            , final int mIcLauncher , final String mApkNameVersion, final String mApkNameTitle, final String mApkPackageName1) {
+            , final int mIcLauncher , final String mApkNameVersion, final String mApkNameTitle, final String mApkPackageName1
+            , final String toastFail,final String toastSuccess) {
         if (conn == null){
             //如果弹窗不显示，则把弹窗取消了
             if (!isShowPb){
-                alertDialogUpdate.dismiss();
+                dismiss(alertDialogUpdate);
             }
             LogUtils.getInstance().Logi("开始下载");
             conn = new ServiceConnection() {
@@ -73,12 +77,18 @@ public class UpdateAppPresenter  implements UpdateAppContract.Presenter {
                         public void onComplete() {
                             installApp(isShowPb,context,mApkNameVersion);
                             view.downAppSuccess();
+                            if (!StringUtil.isNullOrEmpty(toastSuccess)){
+                                Toast.makeText(context,toastSuccess,Toast.LENGTH_SHORT).show();
+                            }
                         }
 
                         @Override
                         public void onFail(String e) {
                             view.downAppFail(e);
-                            alertDialogUpdate.dismiss();
+                            dismiss(alertDialogUpdate);
+                            if (!StringUtil.isNullOrEmpty(toastFail)){
+                                Toast.makeText(context,toastFail,Toast.LENGTH_SHORT).show();
+                            }
                         }
 
                         @Override
@@ -97,6 +107,27 @@ public class UpdateAppPresenter  implements UpdateAppContract.Presenter {
             intent = new Intent(context,UpdataAppService.class);
             context.bindService(intent, conn, Service.BIND_AUTO_CREATE);
         }
+    }
+
+    private void dismiss( AlertDialogUpdate alertDialogUpdate){
+        if (alertDialogUpdate!=null){
+            alertDialogUpdate.dismiss();
+        }
+    }
+    /**
+     * 是否存在APK
+     * @return
+     */
+    private boolean isHaveApk(Context mContext,String apkName){
+        boolean haveApk = false;
+        File apkFile = new File(FilesUtils.getInstance().getAppCacheDir(mContext), FilesUtils.getInstance().apkFile(apkName));
+        LogUtils.getInstance().Logi("安装APP");
+        if (apkFile.exists()) {
+
+        }else{
+
+        }
+        return haveApk;
     }
 
     /**

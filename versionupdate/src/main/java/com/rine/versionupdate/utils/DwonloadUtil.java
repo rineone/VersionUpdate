@@ -24,7 +24,7 @@ public class DwonloadUtil {
         return instance;
     }
 
-    public void initDownload(String downloadUrl, String title, Context context,String apkName) {
+    public void initDownload(String downloadUrl, String title, Context context,String apkName,String mApkPackageName) {
         /**封装下载请求*/
         // 创建下载请求
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(downloadUrl));
@@ -65,10 +65,10 @@ public class DwonloadUtil {
 
 // 将下载请求加入下载队列, 返回一个下载ID
         long downloadId = manager.enqueue(request);
-        query(downloadId,context);
+        query(downloadId,context,mApkPackageName);
     }
 
-    public void query(long downloadId,Context context) {
+    public void query(long downloadId,Context context,String mApkPackageName) {
         // 获取下载管理器服务的实例
         DownloadManager manager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
         // 创建一个查询对象
@@ -112,14 +112,14 @@ public class DwonloadUtil {
              * 请求时设置的保存路径不一定是最终的保存路径，因为当设置的路径已是存在的文件时，
              * 下载器会自动重命名保存路径，例如: .../demo-1.apk, .../demo-2.apk
              */
-            installApp(context,localFilename);
+            installApp(context,localFilename,mApkPackageName);
         }
     }
 
     /**
      * 安装APP
      */
-    public void installApp(Context context, String fileName) {
+    public void installApp(Context context, String fileName,String mApkPackageName) {
 //      开始执行安装
         String localFile = fileName.replace("file:/","");
         File apkFile = new File(localFile);
@@ -132,7 +132,7 @@ public class DwonloadUtil {
                 intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 Uri contentUri = FileProvider.getUriForFile(
                         context
-                        , "com.taoerxue.children.fileprovider"
+                        , mApkPackageName+ ".fileprovider"
                         , apkFile);
                 //添加这一句表示对目标应用临时授权该Uri所代表的文件
                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);

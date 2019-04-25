@@ -25,14 +25,31 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Button bt = findViewById(R.id.bt_dialgo);
+        Button bt2 = findViewById(R.id.bt_dialgo2);
         Button btDown = findViewById(R.id.bt_down);
         mContext = this;
+        final String apkPath = "https://image.taoerxue.com/taoerxueV2.3.7.1801112.apk";
+        bt2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                UpdateApp.from(mContext)
+                        .setApkInfo("app","appV1.1.1.1801112","app名",getPackageName())
+                        .setApkUrl(apkPath)
+                        .setIsCusLayout(false)  //默认为false
+                        .setGraly(true)    //默认为true
+                        .setmMsg("更新内容未知哦哦哦哦哦哦哦哦")
+                        .setFailToast("下载失败！")
+                        .setSuccessToast("下载成功！")
+                        .show();
+            }
+        });
         bt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 UpdateApp.from(mContext,R.layout.view_alertdialog5)
-                .setApkInfo("taoerxue","taoerxueV2.3.7.1801112","淘儿学",getPackageName())
+                .setApkInfo("app","appV1.1.1.1801112","app名",getPackageName())
                 .setApkUrl("https://image.taoerxue.com/taoerxueV2.3.7.1801112.apk")
+                .setIsCusLayout(true)
                 .setIcLauncher(R.mipmap.ic_launcher2)
                         .setLinMainId(R.id.lLayout_bg)
                         .setTvTitleId(R.id.txt_title)
@@ -43,8 +60,8 @@ public class MainActivity extends AppCompatActivity {
                         .setTvSpeedId(R.id.tv_speed)
                         .setmCancel("取消1")
                         .setmConfirm("确定1")
-                        .setmIsShowNofit(true)
-                        .setmIsShowPb(false)
+                        .setmIsShowNofit(true)  //默认为true
+                        .setmIsShowPb(false)    //默认为false
                         .setmTitle("这是一个更新")
                         .setmMsg("更新内容")
                         .setUpdateAppDownListener(new UpdateAppDownListener() {
@@ -106,8 +123,7 @@ public class MainActivity extends AppCompatActivity {
         btDown.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                UpdateApp.from(mContext,0).launchAppDetail("com.taoerxue.children","");
-//                launchAppDetail("com.taoerxue.children","");
+                UpdateApp.from(mContext,0).launchAppDetail(getPackageName(),"");
             }
         });
     }

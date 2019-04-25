@@ -36,7 +36,8 @@ public class UpdateAppContract {
          * @param mApkPackageName 包名
          */
         void startDown(Context context,boolean isShowNofit, boolean isShowPb
-                ,AlertDialogUpdate alertDialogUpdate,String url,int mIcLauncher,String mApkNameVersion,String mApkNameTitle,String mApkPackageName);
+                ,AlertDialogUpdate alertDialogUpdate,String url,int mIcLauncher,String mApkNameVersion,String mApkNameTitle,String mApkPackageName
+                , String toastFail, String toastSuccess);
         void clear(Context context);
     }
 }
