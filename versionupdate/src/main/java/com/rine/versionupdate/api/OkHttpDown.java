@@ -7,6 +7,7 @@ import com.rine.versionupdate.Service.UpdataAppService;
 import com.rine.versionupdate.utils.FilesUtils;
 import com.rine.versionupdate.utils.LogUtils;
 import com.rine.versionupdate.utils.RxBus;
+import com.rine.versionupdate.utils.StringUtil;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -15,9 +16,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -40,11 +44,15 @@ public class OkHttpDown {
     private UpdataAppService.DownloadCallback callback;
     private FileOutputStream fos = null;
     private DownloadBean downloadBean;
+    private String pathUrl;
     /** 重新下载次数**/
     private int reDownSize  = 0;
     public OkHttpDown( UpdataAppService.DownloadCallback callback) {
         if (client == null){
-            client = new OkHttpClient();
+            client = new OkHttpClient
+                    .Builder()
+                    .addInterceptor(new RedirectInterceptor())
+                    .build();
         }
         if (callback != null){
             this.callback = callback;
@@ -63,6 +71,9 @@ public class OkHttpDown {
     public boolean downApp(final Context context, final String url, final String mApkNameVersion, final long totalLen,final long cusDownLen) {
         downloadBean  = new DownloadBean(0,totalLen);
         try {
+            if (StringUtil.isNullOrEmpty(pathUrl)){
+                pathUrl = url;
+            }
             String RANGE = "";
             final File file = new File(FilesUtils.getInstance().getAppCacheDir(context), FilesUtils.getInstance().apkFile(mApkNameVersion));
             //当下载纪录为0时，才去清除APK
@@ -92,10 +103,13 @@ public class OkHttpDown {
                 sleep(1000);
             }
             //访问网络操作
-            Request request = new Request.Builder().url(url)
-            .addHeader("RANGE", RANGE)
+            Request request = new Request.Builder()
+             .url(url)
+             .addHeader("RANGE", RANGE)
+
              .build();
             final double totalRead = downloadBean.getBytesReaded();
+
             client.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
@@ -118,7 +132,7 @@ public class OkHttpDown {
     }
 
     /**
-     * 读取文件
+     * 读取文件//还有个问题就是将传过来的url也要改变
      *
      * @param response
      */
@@ -133,6 +147,7 @@ public class OkHttpDown {
                if (totalRead!=0){
                    sleep(1000);
                }
+               fos = new FileOutputStream(file,true);
                //如果是再次连接的，总长度为第一次获取的值
                if (totalLen!=0){
                    total = totalLen;
@@ -154,8 +169,7 @@ public class OkHttpDown {
                        deleteFile(file,1,"");
                        file.createNewFile();
                    }
-                   fos = new FileOutputStream(file,true);
-                   saveData(is,fos,totalRead,total);
+                   saveData(file,is,fos,totalRead,total);
 //                   while ((len = is.read(bytes)) != -1) {
 //                       if (isBreakDown){
 //                           break;
@@ -214,6 +228,33 @@ public class OkHttpDown {
 
     }
 
+    //处理重定向的拦截器
+    public class RedirectInterceptor implements Interceptor {
+
+        @Override
+        public Response intercept(Interceptor.Chain chain) throws IOException {
+            okhttp3.Request request = chain.request();
+            Response response = chain.proceed(request);
+            int code = response.code();
+            //不为空且不是.apk格式，则有可能为重定向
+            if (!StringUtil.isNullOrEmpty(pathUrl) && !pathUrl.contains(".apk")){
+                pathUrl = response.request().url().toString();
+                //重新构建请求
+                Request newRequest = request.newBuilder().url(pathUrl).build();
+                response = chain.proceed(newRequest);
+            }
+//            if (code == 307) {
+//                //获取重定向的地址
+//                String location = response.headers().get("Location");
+//                //重新构建请求
+//                Request newRequest = request.newBuilder().url(location).build();
+//                response = chain.proceed(newRequest);
+//            }
+            return response;
+        }
+    }
+
+
     public void closeDowm(){
         isBreakDown = true;
     }
@@ -228,7 +269,7 @@ public class OkHttpDown {
      * @return 如果是下载完成返回true,如果停止导致返回false
      * @throws IOException
      */
-    private void saveData(InputStream is, OutputStream os,double totalRead, double totalLen) throws IOException {
+    private void saveData(File file,InputStream is, OutputStream os,double totalRead, double totalLen) throws IOException {
         Source source = Okio.source(is);
         Sink sink = Okio.sink(os);
         Buffer buf = new Buffer();
@@ -243,6 +284,7 @@ public class OkHttpDown {
             downloadBean.setBytesReaded((long)totalRead);
             double min = totalRead/1024/1024 ;
             double max =  totalLen/1024/1024 ;
+
             progress = (min / max) * 100 ;
             RxBus.getDefault().send(new DownloadBean((int)totalLen, (int)totalRead,(int)progress,true));
         }

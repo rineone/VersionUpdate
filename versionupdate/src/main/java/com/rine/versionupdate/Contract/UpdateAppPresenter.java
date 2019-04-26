@@ -45,6 +45,7 @@ public class UpdateAppPresenter  implements UpdateAppContract.Presenter {
             , final AlertDialogUpdate alertDialogUpdate, final String url
             , final int mIcLauncher , final String mApkNameVersion, final String mApkNameTitle, final String mApkPackageName1
             , final String toastFail,final String toastSuccess) {
+        final File file = new File(FilesUtils.getInstance().getAppCacheDir(context), FilesUtils.getInstance().apkFile(mApkNameVersion));
         if (conn == null){
             //如果弹窗不显示，则把弹窗取消了
             if (!isShowPb){
@@ -56,7 +57,7 @@ public class UpdateAppPresenter  implements UpdateAppContract.Presenter {
                 public void onServiceConnected(ComponentName name, IBinder service) {
                     mApkPackageName = mApkPackageName1;
                     UpdataAppService.DownloadBinder binder = (UpdataAppService.DownloadBinder) service;
-                    UpdataAppService myService = binder.getService(context,isShowNofit,isShowPb,alertDialogUpdate);
+                    UpdataAppService myService = binder.getService(context,isShowNofit,isShowPb,alertDialogUpdate,file);
                     myService.startUpdateService(url,mIcLauncher,mApkNameVersion,mApkNameTitle, new UpdataAppService.DownloadCallback() {
                         @Override
                         public void onPrepare() {

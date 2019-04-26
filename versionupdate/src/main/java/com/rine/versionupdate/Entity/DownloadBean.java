@@ -1,4 +1,7 @@
 package com.rine.versionupdate.Entity;
+
+import java.io.File;
+
 /**
  * 下载实例
  * @version 2019/1/23
@@ -28,6 +31,7 @@ public class DownloadBean {
         this.bytesReaded = bytesReaded;
         this.total = total;
     }
+
 
 
     public boolean isSuccess() {

@@ -17,6 +17,9 @@ import com.rine.versionupdate.Linstener.UpdateAppDownListener;
 import com.rine.versionupdate.Linstener.UpdateAppListener;
 import com.rine.versionupdate.UpdateApp;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 public class MainActivity extends AppCompatActivity {
 
     private Context mContext;
@@ -28,7 +31,10 @@ public class MainActivity extends AppCompatActivity {
         Button bt2 = findViewById(R.id.bt_dialgo2);
         Button btDown = findViewById(R.id.bt_down);
         mContext = this;
-        final String apkPath = "https://image.taoerxue.com/taoerxueV2.3.7.1801112.apk";
+//        final String apkPath = "https://image.taoerxue.com/taoerxueV2.3.7.1801112.apk";
+        final String apkPath = "http://wlq.wlqpt.cn/api/cargo/download";
+
+
         bt2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -43,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
                         .show();
             }
         });
+
         bt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -148,4 +155,6 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+
+
 }

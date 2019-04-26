@@ -16,12 +16,16 @@ import com.rine.versionupdate.Entity.DownloadBean;
 import com.rine.versionupdate.R;
 import com.rine.versionupdate.api.OkHttpDown;
 import com.rine.versionupdate.utils.DwonloadUtil;
+import com.rine.versionupdate.utils.FilesUtils;
 import com.rine.versionupdate.utils.LogUtils;
 import com.rine.versionupdate.utils.NotificationUtils;
 import com.rine.versionupdate.utils.RxBus;
 import com.rine.versionupdate.utils.StringUtil;
 import com.rine.versionupdate.widget.AlertDialogUpdate;
 
+import java.io.File;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.DecimalFormat;
 
 import io.reactivex.Observer;
@@ -42,6 +46,7 @@ public class UpdataAppService extends Service {
     private NotificationCompat.Builder builder_25;
     private Notification.Builder builder_26;
     private NotificationManager notificationManager;
+    private File filePaths;
     private CompositeDisposable cd = new CompositeDisposable();
     private DownloadBinder binder = new DownloadBinder();
     /**是否显示进度条**/
@@ -62,8 +67,9 @@ public class UpdataAppService extends Service {
      * 和activity通讯的binder
      */
     public class DownloadBinder extends Binder {
-        public UpdataAppService getService(Context context,boolean isShowNofit, boolean isShowPb, AlertDialogUpdate alertDialogUpdate){
+        public UpdataAppService getService(Context context,boolean isShowNofit, boolean isShowPb, AlertDialogUpdate alertDialogUpdate,File filePath){
             isShowPbService = isShowPb;
+            filePaths = filePath;
             isShowNofitService = isShowNofit;
             alertDialogUpdateService = alertDialogUpdate;
             mContext = context;
@@ -228,6 +234,7 @@ public class UpdataAppService extends Service {
 
                             if (progress >= 100){
 
+
                                 if (isShowNofitService){
                                     notificationManager.cancel( nofitDownAppCode);
                                 }
@@ -235,6 +242,10 @@ public class UpdataAppService extends Service {
                                     alertDialogUpdateService.dismiss();
                                 }
                                 cd.dispose();
+                                if (FilesUtils.getFileSize(filePaths) != downloadBean.getTotal()){
+                                    callback.onFail("下载过程失败!");
+                                    return;
+                                }
                                 callback.onComplete();
                             }
 
@@ -308,5 +319,11 @@ public class UpdataAppService extends Service {
         void onComplete();
         void onFail(String e);
         void toast(String mess);
+    }
+
+
+    private String getApkUrl(String url){
+        String apkUrl = "";
+        return apkUrl;
     }
 }
