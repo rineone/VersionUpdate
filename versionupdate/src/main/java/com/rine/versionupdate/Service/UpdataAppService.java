@@ -15,6 +15,7 @@ import android.support.v4.app.NotificationCompat;
 import com.rine.versionupdate.Entity.DownloadBean;
 import com.rine.versionupdate.R;
 import com.rine.versionupdate.api.OkHttpDown;
+import com.rine.versionupdate.utils.DwonloadUtil;
 import com.rine.versionupdate.utils.LogUtils;
 import com.rine.versionupdate.utils.NotificationUtils;
 import com.rine.versionupdate.utils.RxBus;
@@ -93,6 +94,7 @@ public class UpdataAppService extends Service {
             isShowNofitService = false;
         }
         apkUrl = url;
+//        DwonloadUtil.getInstance().initDownload(apkUrl,"下载",mContext,"cag1","cago2");
         handleUpdate(mIcLauncher,mApkNameVersion,mApkNameTitle,code);
     }
 

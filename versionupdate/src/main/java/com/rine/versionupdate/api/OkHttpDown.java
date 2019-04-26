@@ -8,17 +8,23 @@ import com.rine.versionupdate.utils.FilesUtils;
 import com.rine.versionupdate.utils.LogUtils;
 import com.rine.versionupdate.utils.RxBus;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import okio.Buffer;
+import okio.Okio;
+import okio.Sink;
+import okio.Source;
 
 import static java.lang.Thread.sleep;
 
@@ -33,6 +39,7 @@ public class OkHttpDown {
     private InputStream is = null;
     private UpdataAppService.DownloadCallback callback;
     private FileOutputStream fos = null;
+    private DownloadBean downloadBean;
     /** 重新下载次数**/
     private int reDownSize  = 0;
     public OkHttpDown( UpdataAppService.DownloadCallback callback) {
@@ -54,7 +61,7 @@ public class OkHttpDown {
      * @return
      */
     public boolean downApp(final Context context, final String url, final String mApkNameVersion, final long totalLen,final long cusDownLen) {
-        final DownloadBean downloadBean = new DownloadBean(0,totalLen);
+        downloadBean  = new DownloadBean(0,totalLen);
         try {
             String RANGE = "";
             final File file = new File(FilesUtils.getInstance().getAppCacheDir(context), FilesUtils.getInstance().apkFile(mApkNameVersion));
@@ -133,7 +140,7 @@ public class OkHttpDown {
                    total = response.body().contentLength();
                }
                /**阀门，控制流**/
-               int faLong = 1024*9000;
+               int faLong = 1024*1024*1024*1024;
                byte[] bytes = new byte[faLong];
                int len = 0;
 
@@ -148,18 +155,18 @@ public class OkHttpDown {
                        file.createNewFile();
                    }
                    fos = new FileOutputStream(file,true);
-                   while ((len = is.read(bytes)) != -1) {
-                       if (isBreakDown){
-                           break;
-                       }
-                       fos.write(bytes, 0, len);
-                       totalRead = totalRead + len;
-                       sleep(10);
-                       double min = totalRead/1024/1024 ;
-                       double max =  total/1024/1024 ;
-                       progress = (min / max) * 100 ;
-                       RxBus.getDefault().send(new DownloadBean((int)total, (int)totalRead,(int)progress,true));
-                   }
+                   saveData(is,fos,totalRead,total);
+//                   while ((len = is.read(bytes)) != -1) {
+//                       if (isBreakDown){
+//                           break;
+//                       }
+//                       fos.write(bytes, 0, len);
+//                       totalRead = totalRead + len;
+//                       double min = totalRead/1024/1024 ;
+//                       double max =  total/1024/1024 ;
+//                       progress = (min / max) * 100 ;
+//                       RxBus.getDefault().send(new DownloadBean((int)total, (int)totalRead,(int)progress,true));
+//                   }
                }
 
 
@@ -189,7 +196,7 @@ public class OkHttpDown {
                            RxBus.getDefault().send(new DownloadBean(false,0,0));
                        }else{
                            //网络问题退出
-                           netErrorSend(totalRead,total,totalLen);
+                           netErrorSend(downloadBean.getBytesReaded(),total,totalLen);
                        }
                    }
 
@@ -200,6 +207,7 @@ public class OkHttpDown {
            }
        }else {
            //失败大于5次则直接下载错误
+            downloadBean.setBytesReaded(0);
             reDownSize = 0;
            RxBus.getDefault().send(new DownloadBean(false,0,0));
        }
@@ -209,6 +217,41 @@ public class OkHttpDown {
     public void closeDowm(){
         isBreakDown = true;
     }
+
+
+
+    int MAX_BUFF_SIZE = 1024*1024*1024;
+    /***
+     * 保存文件
+     * @param is 源输入流
+     * @param os 目标输出流
+     * @return 如果是下载完成返回true,如果停止导致返回false
+     * @throws IOException
+     */
+    private void saveData(InputStream is, OutputStream os,double totalRead, double totalLen) throws IOException {
+        Source source = Okio.source(is);
+        Sink sink = Okio.sink(os);
+        Buffer buf = new Buffer();
+        long len = 0;
+        double progress = 0;
+        while ((len = source.read(buf, MAX_BUFF_SIZE)) != -1 ) {
+            if (isBreakDown){
+                break;
+            }
+            sink.write(buf, len);
+            totalRead = totalRead + len;
+            downloadBean.setBytesReaded((long)totalRead);
+            double min = totalRead/1024/1024 ;
+            double max =  totalLen/1024/1024 ;
+            progress = (min / max) * 100 ;
+            RxBus.getDefault().send(new DownloadBean((int)totalLen, (int)totalRead,(int)progress,true));
+        }
+        sink.flush();
+        sink.close();
+        source.close();
+//        return !isExit;
+    }
+
 
 
     /**
@@ -236,6 +279,7 @@ public class OkHttpDown {
         }else {
             //失败大于reDownSize次则直接下载错误
             reDownSize = 0;
+            downloadBean.setBytesReaded(0);
             RxBus.getDefault().send(new DownloadBean(false,0,0));
         }
 
