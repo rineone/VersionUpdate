@@ -97,9 +97,10 @@ public class AlertDialogUpdate {
             tvSpeed.setVisibility(View.GONE);
         }
         if (linMain!=null){
+            int linM=linMain.getWidth();
             // 调整dialog背景大小
-            linMain.setLayoutParams(new FrameLayout.LayoutParams((int) (display
-                    .getWidth() * 0.85), LinearLayout.LayoutParams.WRAP_CONTENT));
+            linMain.setLayoutParams(new FrameLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT
+                    , LinearLayout.LayoutParams.WRAP_CONTENT));
         }
 
         return this;

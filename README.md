@@ -1,6 +1,7 @@
 # SuperCalendar
 ## ChangeLog
-* 发布1.5.2 现在版本，增加是否断点更新字段 .setIsDuanDian(false)，默认为false
+* 发布1.5.3 现在版本，修复页面问题
+* 发布1.5.2 旧版本，增加是否断点更新字段 .setIsDuanDian(false)，默认为false
 * 发布1.5.1 旧版本，增快下载速度
 * 发布1.5.0 旧版本，增大下载阀门
 * 发布1.4 旧版本，修复部分BUG
