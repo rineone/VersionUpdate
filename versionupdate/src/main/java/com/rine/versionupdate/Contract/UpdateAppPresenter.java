@@ -41,7 +41,7 @@ public class UpdateAppPresenter  implements UpdateAppContract.Presenter {
 
 
     @Override
-    public void startDown(final Context context, final boolean isShowNofit, final boolean isShowPb
+    public void startDown(final Context context,final boolean isDuandian, final boolean isShowNofit, final boolean isShowPb
             , final AlertDialogUpdate alertDialogUpdate, final String url
             , final int mIcLauncher , final String mApkNameVersion, final String mApkNameTitle, final String mApkPackageName1
             , final String toastFail,final String toastSuccess) {
@@ -57,7 +57,7 @@ public class UpdateAppPresenter  implements UpdateAppContract.Presenter {
                 public void onServiceConnected(ComponentName name, IBinder service) {
                     mApkPackageName = mApkPackageName1;
                     UpdataAppService.DownloadBinder binder = (UpdataAppService.DownloadBinder) service;
-                    UpdataAppService myService = binder.getService(context,isShowNofit,isShowPb,alertDialogUpdate,file);
+                    UpdataAppService myService = binder.getService(context,isDuandian,isShowNofit,isShowPb,alertDialogUpdate,file);
                     myService.startUpdateService(url,mIcLauncher,mApkNameVersion,mApkNameTitle, new UpdataAppService.DownloadCallback() {
                         @Override
                         public void onPrepare() {

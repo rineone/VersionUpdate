@@ -85,6 +85,8 @@ public class UpdateApp implements UpdateAppContract.View {
     private boolean mIsTvMsgVisible = true;
     /**包名**/
     private String mApkPackageName="";
+
+    private boolean mIsDuanDian = false;
     private int mIcLauncher = R.mipmap.ic_launcher2;
     private UpdateAppListener updateAppListener;
     private UpdateAppDownListener updateAppDownListener;
@@ -118,6 +120,12 @@ public class UpdateApp implements UpdateAppContract.View {
 
     public UpdateApp setIsCusLayout(boolean isCusLayout){
         this.isCusLayout = isCusLayout;
+        return this;
+    }
+
+    //是否断点
+    public UpdateApp setIsDuanDian(boolean mIsDuanDian){
+        this.mIsDuanDian = mIsDuanDian;
         return this;
     }
 
@@ -332,7 +340,7 @@ public class UpdateApp implements UpdateAppContract.View {
         alertDialogUpdate.setPositiveButton(dialogConfirmDiss, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mPresenter.startDown(mContext,mIsShowNofit,mIsShowPb
+                mPresenter.startDown(mContext,mIsDuanDian,mIsShowNofit,mIsShowPb
                         ,alertDialogUpdate,mApkUrl,mIcLauncher,mApkNameVersion,mApkNameTitle,mApkPackageName,mToastFails,mToastSuccess);
                 if (updateAppListener!=null) {
                     updateAppListener.updateAppConfirm(alertDialogUpdate.getTvConfirm(),alertDialogUpdate.getTvCancel(),alertDialogUpdate.getTvClose(),alertDialogUpdate.getTvMsg());

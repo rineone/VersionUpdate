@@ -56,6 +56,7 @@ public class UpdataAppService extends Service {
     private AlertDialogUpdate alertDialogUpdateService;
     private Context mContext;
     private OkHttpDown okHttpDown;
+    private boolean isDuandian;
     private String apkUrl;
 
     @Override
@@ -67,9 +68,11 @@ public class UpdataAppService extends Service {
      * 和activity通讯的binder
      */
     public class DownloadBinder extends Binder {
-        public UpdataAppService getService(Context context,boolean isShowNofit, boolean isShowPb, AlertDialogUpdate alertDialogUpdate,File filePath){
+        public UpdataAppService getService(Context context,boolean mIsDuandian,
+                                           boolean isShowNofit, boolean isShowPb, AlertDialogUpdate alertDialogUpdate,File filePath){
             isShowPbService = isShowPb;
             filePaths = filePath;
+            isDuandian = mIsDuandian;
             isShowNofitService = isShowNofit;
             alertDialogUpdateService = alertDialogUpdate;
             mContext = context;
@@ -153,10 +156,10 @@ public class UpdataAppService extends Service {
      */
     private OkHttpDown getOkHttpDown(OkHttpDown okHttpDown1){
         if (okHttpDown1 == null){
-            okHttpDown1 = new OkHttpDown(callback);
+            okHttpDown1 = new OkHttpDown(callback,isDuandian);
         }else {
             okHttpDown1.closeDowm();
-            okHttpDown1 = new OkHttpDown(callback);
+            okHttpDown1 = new OkHttpDown(callback,isDuandian);
         }
         return okHttpDown1;
     }
@@ -242,6 +245,8 @@ public class UpdataAppService extends Service {
                                     alertDialogUpdateService.dismiss();
                                 }
                                 cd.dispose();
+                                long fileP = FilesUtils.getFileSize(filePaths);
+                                long file2 = downloadBean.getTotal();
                                 if (FilesUtils.getFileSize(filePaths) != downloadBean.getTotal()){
                                     callback.onFail("下载过程失败!");
                                     return;

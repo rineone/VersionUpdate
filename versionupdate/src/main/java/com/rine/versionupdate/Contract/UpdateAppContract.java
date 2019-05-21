@@ -26,6 +26,7 @@ public class UpdateAppContract {
         /**
          *
          * @param context
+         * * @param isDuandian 是否断点
          * @param isShowNofit 是否显示在通知栏上
          * @param isShowPb 是否显示在弹窗上
          * @param alertDialogUpdate
@@ -35,7 +36,7 @@ public class UpdateAppContract {
          * @param mApkNameTitle APK在通知栏上显示的标题
          * @param mApkPackageName 包名
          */
-        void startDown(Context context,boolean isShowNofit, boolean isShowPb
+        void startDown(Context context,boolean isDuandian,boolean isShowNofit, boolean isShowPb
                 ,AlertDialogUpdate alertDialogUpdate,String url,int mIcLauncher,String mApkNameVersion,String mApkNameTitle,String mApkPackageName
                 , String toastFail, String toastSuccess);
         void clear(Context context);
