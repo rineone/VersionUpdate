@@ -145,6 +145,8 @@ public class OkHttpDown {
      */
     private void writeFile(Context context,File file,Response response,String mApkNameVersion,double totalRead, long totalLen) {
         double progress = 0;
+        //控制流量数
+        int proInt;
         if (reDownSize<10){
             reDownSize ++;
             is = response.body().byteStream();
@@ -154,8 +156,6 @@ public class OkHttpDown {
                 if (totalRead!=0){
                     sleep(1000);
                 }
-
-
                 fos = new FileOutputStream(file,true);
                 //如果是再次连接的，总长度为第一次获取的值
                 if (totalLen!=0){
@@ -167,6 +167,11 @@ public class OkHttpDown {
                 int faLong = 1024*100;
                 byte[] bytes = new byte[faLong];
                 int len = 0;
+                //初始化流量
+                double min1 = totalRead/1024/1024 ;
+                double max1 =  total/1024/1024 ;
+                proInt =(int) ((min1 / max1) * 100);
+
                 while ((len = is.read(bytes)) != -1) {
                     if (isBreakDown){
                         break;
@@ -177,7 +182,11 @@ public class OkHttpDown {
                     double min = totalRead/1024/1024 ;
                     double max =  total/1024/1024 ;
                     progress = (min / max) * 100 ;
-                    RxBus.getDefault().send(new DownloadBean((int)total, (int)totalRead,(int)progress,true));
+                    int progressInt = (int)progress;
+                    if (progressInt!=proInt){
+                        proInt = progressInt;
+                        RxBus.getDefault().send(new DownloadBean((int)total, (int)totalRead,progressInt,true));
+                    }
                 }
                 is.close();
                 fos.flush();
