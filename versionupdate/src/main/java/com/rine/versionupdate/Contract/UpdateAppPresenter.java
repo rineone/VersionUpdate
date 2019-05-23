@@ -34,6 +34,7 @@ public class UpdateAppPresenter  implements UpdateAppContract.Presenter {
     private UpdateAppContract.View view;
     private ServiceConnection conn;
     private Intent intent;
+    private boolean isBind = false;
     private String mApkPackageName;
     public UpdateAppPresenter(UpdateAppContract.View view) {
         this.view = view;
@@ -106,7 +107,7 @@ public class UpdateAppPresenter  implements UpdateAppContract.Presenter {
                 }
             };
             intent = new Intent(context,UpdataAppService.class);
-            context.bindService(intent, conn, Service.BIND_AUTO_CREATE);
+            boolean isBind = context.bindService(intent, conn, Context.BIND_AUTO_CREATE);
         }
     }
 
@@ -169,11 +170,15 @@ public class UpdateAppPresenter  implements UpdateAppContract.Presenter {
     @Override
     public void clear(Context context) {
         if (conn!=null){
-            context.unbindService(conn);
-            if (intent != null){
-                context.stopService(intent);
-                intent = null;
-            }
+           if (isBind){
+               isBind = false;
+               context.unbindService(conn);
+               if (intent != null){
+                   context.stopService(intent);
+                   intent = null;
+               }
+           }
+
         }
     }
 }
