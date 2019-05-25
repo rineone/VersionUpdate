@@ -107,7 +107,7 @@ public class UpdateAppPresenter  implements UpdateAppContract.Presenter {
                 }
             };
             intent = new Intent(context,UpdataAppService.class);
-            boolean isBind = context.bindService(intent, conn, Context.BIND_AUTO_CREATE);
+            isBind = context.bindService(intent, conn, Context.BIND_AUTO_CREATE);
         }
     }
 
@@ -169,16 +169,20 @@ public class UpdateAppPresenter  implements UpdateAppContract.Presenter {
 
     @Override
     public void clear(Context context) {
-        if (conn!=null){
-           if (isBind){
-               isBind = false;
-               context.unbindService(conn);
-               if (intent != null){
-                   context.stopService(intent);
-                   intent = null;
-               }
-           }
+        try {
+            if (conn!=null){
+                if (isBind){
+                    isBind = false;
+                    context.unbindService(conn);
+                    if (intent != null){
+                        context.stopService(intent);
+                        intent = null;
+                    }
+                }
+            }
+        }catch (Exception e){
 
         }
+
     }
 }

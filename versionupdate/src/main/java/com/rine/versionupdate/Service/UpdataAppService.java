@@ -301,15 +301,22 @@ public class UpdataAppService extends Service {
      */
     @Override
     public void onDestroy() {
-        if (cd!=null){
-            cd.dispose();
-            cd.clear();
+        try {
+            if (cd!=null){
+                cd.dispose();
+                cd.clear();
+            }
+            if (okHttpDown!=null){
+                okHttpDown.closeDowm();
+            }
+            okHttpDown = null;
+            if (notificationManager!=null ){
+                notificationManager.cancelAll();
+                notificationManager = null;
+            }
+        }catch (Exception e){
+
         }
-        if (okHttpDown!=null){
-            okHttpDown.closeDowm();
-        }
-        okHttpDown = null;
-        notificationManager = null;
         super.onDestroy();
     }
 

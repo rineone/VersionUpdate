@@ -222,7 +222,8 @@ public class AlertDialogUpdate {
                 public void onClick(View v) {
                     listener.onClick(v);
                     if (isDismiss){
-                        dismiss();
+//                        dismiss();
+                        dialog.dismiss();
                     }
                 }
             });
