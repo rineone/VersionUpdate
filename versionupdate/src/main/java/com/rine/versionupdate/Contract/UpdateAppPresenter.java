@@ -2,7 +2,6 @@ package com.rine.versionupdate.Contract;
 
 
 import android.app.NotificationManager;
-import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -13,7 +12,6 @@ import android.os.IBinder;
 import android.support.v4.content.FileProvider;
 import android.widget.Toast;
 
-import com.rine.versionupdate.R;
 import com.rine.versionupdate.Service.UpdataAppService;
 import com.rine.versionupdate.utils.FilesUtils;
 import com.rine.versionupdate.utils.LogUtils;
@@ -22,7 +20,6 @@ import com.rine.versionupdate.widget.AlertDialogUpdate;
 
 import java.io.File;
 
-import static android.os.Process.getUidForName;
 import static android.os.Process.killProcess;
 
 /**
@@ -50,7 +47,7 @@ public class UpdateAppPresenter  implements UpdateAppContract.Presenter {
         if (conn == null){
             //如果弹窗不显示，则把弹窗取消了
             if (!isShowPb){
-                dismiss(alertDialogUpdate);
+                dismissNoCancle(alertDialogUpdate);
             }
             LogUtils.getInstance().Logi("开始下载");
             conn = new ServiceConnection() {
@@ -111,9 +108,23 @@ public class UpdateAppPresenter  implements UpdateAppContract.Presenter {
         }
     }
 
+    /**
+     * 会把服务diss掉
+     * @param alertDialogUpdate
+     */
     private void dismiss( AlertDialogUpdate alertDialogUpdate){
         if (alertDialogUpdate!=null){
             alertDialogUpdate.dismiss();
+        }
+    }
+
+    /**
+     * 不会把服务diss掉
+     * @param alertDialogUpdate
+     */
+    private void dismissNoCancle( AlertDialogUpdate alertDialogUpdate){
+        if (alertDialogUpdate!=null){
+            alertDialogUpdate.dismissNoCancle();
         }
     }
     /**
@@ -125,9 +136,7 @@ public class UpdateAppPresenter  implements UpdateAppContract.Presenter {
         File apkFile = new File(FilesUtils.getInstance().getAppCacheDir(mContext), FilesUtils.getInstance().apkFile(apkName));
         LogUtils.getInstance().Logi("安装APP");
         if (apkFile.exists()) {
-
         }else{
-
         }
         return haveApk;
     }

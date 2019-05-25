@@ -222,8 +222,7 @@ public class AlertDialogUpdate {
                 public void onClick(View v) {
                     listener.onClick(v);
                     if (isDismiss){
-//                        dismiss();
-                        dialog.dismiss();
+                        dismissNoCancle();
                     }
                 }
             });
@@ -367,7 +366,15 @@ public class AlertDialogUpdate {
 
     public void dismiss() {
         mPresenter.clear(mContext);
-        dialog.dismiss();
+        if (dialog!=null && dialog.isShowing()){
+            dialog.dismiss();
+        }
+
+    }
+    public void dismissNoCancle() {
+        if (dialog!=null && dialog.isShowing()){
+            dialog.dismiss();
+        }
     }
 
 
