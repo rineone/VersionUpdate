@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
                         .setApkUrl(apkPath)
                         .setIsCusLayout(false)  //默认为false
                         .setGraly(true)    //默认为true
-                        .setIsDuanDian(false)
+                        .setIsDuanDian(true)
                         .setmMsg("更新内容未知哦哦哦哦哦哦哦哦")
                         .setFailToast("下载失败！")
                         .setSuccessToast("下载成功！")

@@ -49,6 +49,8 @@ public class OkHttpDown {
     //重新下载总次数
     private int reMainDownSize  = 0;
     private boolean isDuandian;
+    private Context mContext;
+    private String mApkNameVersion;
     public OkHttpDown( UpdataAppService.DownloadCallback callback,boolean mIsDuandian) {
         isDuandian = mIsDuandian;
         if (client == null){
@@ -68,9 +70,11 @@ public class OkHttpDown {
      * @param url
      * @return
      */
-    public boolean downApp(final Context context, final String url, final String mApkNameVersion, final long totalLen,final long cusDownLen) {
+    public boolean downApp(final Context context, final String url, final String apkNameVersion, final long totalLen,final long cusDownLen) {
         DownloadBean downloadBean = new DownloadBean(0,totalLen);
         try {
+            mContext = context;
+            mApkNameVersion = apkNameVersion;
             String RANGE = "";
             final File file = new File(FilesUtils.getInstance().getAppCacheDir(context), FilesUtils.getInstance().apkFile(mApkNameVersion));
             //当下载纪录为0时，才去清除APK
@@ -80,15 +84,11 @@ public class OkHttpDown {
             }else{
                 if (isDuandian){
                     if (totalLen == 0){
-                        deleteFile(file,1,"");
-                        file.createNewFile();
-                        RANGE ="";
                     }else{
                         long fileLen = file.length();
                         if (fileLen!=cusDownLen){
                             //如果下载的长度和文件长度不匹配则重新下载
-                            deleteFile(file,1,"");
-                            file.createNewFile();
+                            deleteFile(mApkNameVersion,1,"");
                             fileLen = 0;
                             RANGE ="";
                         }else{
@@ -99,10 +99,13 @@ public class OkHttpDown {
                         downloadBean.setBytesReaded(fileLen);
                     }
                 }else{
-                    deleteFile(file,1,"");
-                    file.createNewFile();
-                    RANGE ="";
-                    downloadBean.setBytesReaded(1);
+                    if (totalLen == 0){
+                    }else{
+                        deleteFile(mApkNameVersion,1,"");
+                        RANGE ="";
+                        downloadBean.setBytesReaded(1);
+                    }
+
                 }
             }
             if (totalLen!=0){
@@ -121,6 +124,7 @@ public class OkHttpDown {
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
                     if (response.body() == null) {
+                        netErrorSend2((long) totalRead,totalLen);
                         return;
                     }
                     if (isDuandian){
@@ -139,6 +143,23 @@ public class OkHttpDown {
     }
 
     /**
+     * 文件是否存在
+     */
+    private boolean isFile(File file,long total){
+        try {
+            long fileLen = file.length();
+            if (fileLen!=total){
+                //如果存在的文件的长度和总长度不匹配则重新下载
+                deleteFile(mApkNameVersion,1,"");
+                return false;
+            }else{
+                return true;
+            }
+        }catch (Exception e){
+            return false;
+        }
+    }
+    /**
      * 读取文件
      *
      * @param response
@@ -156,7 +177,6 @@ public class OkHttpDown {
                 if (totalRead!=0){
                     sleep(1000);
                 }
-                fos = new FileOutputStream(file,true);
                 //如果是再次连接的，总长度为第一次获取的值
                 if (totalLen!=0){
                     total = totalLen;
@@ -167,30 +187,46 @@ public class OkHttpDown {
                 int faLong = 1024*100;
                 byte[] bytes = new byte[faLong];
                 int len = 0;
-                //初始化流量
-                double min1 = totalRead/1024/1024 ;
-                double max1 =  total/1024/1024 ;
-                proInt =(int) ((min1 / max1) * 100);
 
-                while ((len = is.read(bytes)) != -1) {
-                    if (isBreakDown){
-                        break;
+                //一开始检测其网上的文件大小和本地的文件大小是否一样，如果一样则直接成功，如果不一样则删除
+                double fileLens = (double)FilesUtils.getFileSize(file);
+                if (totalRead == 0 && fileLens == total){
+                    progress = 100;
+                    RxBus.getDefault().send(new DownloadBean((int)total, (int)total, (int)progress,true));
+                }else{
+                    if (totalRead == 0){
+                        deleteFile(mApkNameVersion,1,"");
                     }
-                    fos.write(bytes, 0, len);
-                    totalRead = totalRead + len;
+                    fos = new FileOutputStream(file,true);
+                    //初始化流量
+                    double min1 = totalRead/1024/1024 ;
+                    double max1 =  total/1024/1024 ;
+                    proInt =(int) ((min1 / max1) * 100);
+
+                    while ((len = is.read(bytes)) != -1) {
+                        if (isBreakDown){
+                            break;
+                        }
+                        fos.write(bytes, 0, len);
+                        totalRead = totalRead + len;
 //                    sleep(10);
-                    double min = totalRead/1024/1024 ;
-                    double max =  total/1024/1024 ;
-                    progress = (min / max) * 100 ;
-                    int progressInt = (int)progress;
-                    if (progressInt!=proInt){
-                        proInt = progressInt;
-                        RxBus.getDefault().send(new DownloadBean((int)total, (int)totalRead,progressInt,true));
+                        double min = totalRead/1024/1024 ;
+                        double max =  total/1024/1024 ;
+                        progress = (min / max) * 100 ;
+                        int progressInt = (int)progress;
+                        if (progressInt!=proInt){
+                            proInt = progressInt;
+                            RxBus.getDefault().send(new DownloadBean((int)total, (int)totalRead,progressInt,true));
+                        }
                     }
                 }
-                is.close();
-                fos.flush();
-                fos.close();
+                if (is != null) {
+                    is.close();
+                }
+                if (fos!=null){
+                    fos.flush();
+                    fos.close();
+                }
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -277,14 +313,15 @@ public class OkHttpDown {
     }
 
     /**
-     * 删除文件
-     * @param file
+     * 删除文件目录
      */
-    private void deleteFile(File file,int state,String e){
-        LogUtils.getInstance().Logi("文件被删除"+state+","+e);
-        //如果文件存在，则删除
-        if (file.exists()){
-            file.delete();
+    private void deleteFile( String mApkNameVersion,int state,String e){
+        try {
+            String file = FilesUtils.getInstance().getAppCacheDir(mContext)+ FilesUtils.getInstance().getApkFile();
+            FilesUtils.deleteDirectory(file);
+            FilesUtils.makeFilePath(FilesUtils.getInstance().getAppCacheDir(mContext), FilesUtils.getInstance().apkFile(mApkNameVersion));
+        }catch (Exception ex){
+            RxBus.getDefault().send(new DownloadBean(false,0,0));
         }
     }
 }
